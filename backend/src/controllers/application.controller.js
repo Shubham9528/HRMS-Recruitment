@@ -2,6 +2,11 @@ import * as applicationService from '../services/application.service.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 
+export const getApplications = asyncHandler(async (req, res, next) => {
+  const applications = await applicationService.getApplications(req.query);
+  sendSuccess(res, applications, 'Applications fetched successfully');
+});
+
 export const createApplication = asyncHandler(async (req, res, next) => {
   const { candidateId, jobId } = req.body;
   const application = await applicationService.createApplication(candidateId, jobId);

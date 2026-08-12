@@ -23,7 +23,7 @@ export const getJobById = async (jobId) => {
 
 export const updateJob = async (jobId, updateData) => {
   return await Job.findByIdAndUpdate(jobId, updateData, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true,
   });
 };
@@ -32,6 +32,6 @@ export const closeJob = async (jobId) => {
   return await Job.findByIdAndUpdate(
     jobId,
     { status: 'closed', closedAt: Date.now() },
-    { new: true }
+    { returnDocument: 'after' }
   );
 };

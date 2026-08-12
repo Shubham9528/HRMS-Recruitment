@@ -216,28 +216,28 @@ After each task: run `npm run lint` and `npm run format` before starting the nex
 ### Phase 2 — Frontend Foundation (Day 2)
 
 - [ ] **2.1** (optional) `src/types/` — JSDoc `@typedef` blocks per domain (e.g. `/** @typedef {{ _id: string, title: string, status: 'open'|'closed'|'archived' }} Job */`) for editor hints only — skip entirely if you don't want it
-- [ ] **2.2** `src/api/axiosInstance.js` — `axios.create({ baseURL: import.meta.env.VITE_API_URL })`; request interceptor attaches the `Authorization` header from stored auth state; response interceptor catches `401` globally (dispatch logout + redirect to `/login`) so no page has to handle it individually
-- [ ] **2.3** Tailwind config — implement the Section 2 Design System tokens exactly in `theme.extend` (colors, `fontFamily.display` = Plus Jakarta Sans, `fontFamily.sans` = Inter, radius, type scale); add the Google Fonts `<link>` to `index.html`; every later component references these tokens, never a raw hex value, arbitrary size, or ad hoc font
-- [ ] **2.4** `src/components/ui/Button.jsx` — props: `variant` (`'primary'|'secondary'|'danger'|'ghost'`), `size`, `isLoading`, `disabled`, `children`, `onClick`, all PropTypes-required; when `isLoading`, disable the button and show a spinner (prevents duplicate submits)
-- [ ] **2.5** `Input.jsx`, `Select.jsx` — controlled only (`value` + `onChange` props); `error` prop renders a helper line below the field; no internal state duplicating the parent's
-- [ ] **2.6** `Modal.jsx` — `isOpen`, `onClose`, `title`, `children`; closes on `Escape` and backdrop click
-- [ ] **2.7** `Table.jsx` — generic: `columns` (`[{ key, label, render? }]`), `data`, `isLoading`, `emptyMessage`. `isLoading` → render `Skeleton` rows matching column count; `data.length === 0` → render `EmptyState`. This ONE component is reused by every list page — don't build a second one later
-- [ ] **2.8** `Badge.jsx` — `status` prop maps to color via a lookup object defined once in `utils/statusColors.js` (not inline conditionals repeated per usage)
-- [ ] **2.9** `EmptyState.jsx`, `ErrorState.jsx` — `title`, `description`, optional `action`; `ErrorState` also accepts `onRetry`
-- [ ] **2.10** `AppLayout.jsx` — sidebar (collapses to a slide-over below `md`) + topbar + `<Outlet />`; sidebar links come from one `NAV_ITEMS` constant, not per-link hardcoded JSX
-- [ ] **2.11** `ProtectedRoute.jsx` — reads auth state; no token → `<Navigate to="/login" />`; else render `<Outlet />`
-- [ ] **2.12** `src/features/auth/authSlice.js` — state `{ user, token, status }`; `login` as a `createAsyncThunk` with `pending/fulfilled/rejected`; `logout` action. Token persisted to `localStorage` only inside the `fulfilled` case, not scattered across components
-- [ ] **2.13** `Login.jsx` — React Hook Form + Zod (`email`, `password`); submit dispatches `login`; inline field errors AND a toast on rejection; on success redirect to the route the user originally tried to reach
-- [ ] **2.14** Lint clean before Phase 3 — every component built here is reused everywhere else; a mistake here multiplies
+- [✅] **2.2** `src/api/axiosInstance.js` — `axios.create({ baseURL: import.meta.env.VITE_API_URL })`; request interceptor attaches the `Authorization` header from stored auth state; response interceptor catches `401` globally (dispatch logout + redirect to `/login`) so no page has to handle it individually
+- [✅] **2.3** Tailwind config — implement the Section 2 Design System tokens exactly in `theme.extend` (colors, `fontFamily.display` = Plus Jakarta Sans, `fontFamily.sans` = Inter, radius, type scale); add the Google Fonts `<link>` to `index.html`; every later component references these tokens, never a raw hex value, arbitrary size, or ad hoc font
+- [✅] **2.4** `src/components/ui/Button.jsx` — props: `variant` (`'primary'|'secondary'|'danger'|'ghost'`), `size`, `isLoading`, `disabled`, `children`, `onClick`, all PropTypes-required; when `isLoading`, disable the button and show a spinner (prevents duplicate submits)
+- [✅] **2.5** `Input.jsx`, `Select.jsx` — controlled only (`value` + `onChange` props); `error` prop renders a helper line below the field; no internal state duplicating the parent's
+- [✅] **2.6** `Modal.jsx` — `isOpen`, `onClose`, `title`, `children`; closes on `Escape` and backdrop click
+- [✅] **2.7** `Table.jsx` — generic: `columns` (`[{ key, label, render? }]`), `data`, `isLoading`, `emptyMessage`. `isLoading` → render `Skeleton` rows matching column count; `data.length === 0` → render `EmptyState`. This ONE component is reused by every list page — don't build a second one later
+- [✅] **2.8** `Badge.jsx` — `status` prop maps to color via a lookup object defined once in `utils/statusColors.js` (not inline conditionals repeated per usage)
+- [✅] **2.9** `EmptyState.jsx`, `ErrorState.jsx` — `title`, `description`, optional `action`; `ErrorState` also accepts `onRetry`
+- [✅] **2.10** `AppLayout.jsx` — sidebar (collapses to a slide-over below `md`) + topbar + `<Outlet />`; sidebar links come from one `NAV_ITEMS` constant, not per-link hardcoded JSX
+- [✅] **2.11** `ProtectedRoute.jsx` — reads auth state; no token → `<Navigate to="/login" />`; else render `<Outlet />`
+- [✅] **2.12** `src/features/auth/authSlice.js` — state `{ user, token, status }`; `login` as a `createAsyncThunk` with `pending/fulfilled/rejected`; `logout` action. Token persisted to `localStorage` only inside the `fulfilled` case, not scattered across components
+- [✅] **2.13** `Login.jsx` — React Hook Form + Zod (`email`, `password`); submit dispatches `login`; inline field errors AND a toast on rejection; on success redirect to the route the user originally tried to reach
+- [✅] **2.14** Lint clean before Phase 3 — every component built here is reused everywhere else; a mistake here multiplies
 
 ### Phase 3 — Job Management (Day 3)
 
-- [ ] **3.1** `src/features/jobs/jobsSlice.js` — state `{ items, status, error, filters: { search, status } }`; thunks `fetchJobs(filters)`, `createJob`, `updateJob`, `closeJob`; update `items` immutably via Redux Toolkit's built-in Immer, no manual deep spreading
-- [ ] **3.2** `src/api/jobs.api.js` — `getJobs(params)`, `getJob(id)`, `createJob(payload)`, `updateJob(id, payload)`, `closeJob(id)`; each unwraps `res.data.data` here once so components never touch the raw response envelope
-- [ ] **3.3** `src/pages/Jobs/JobList.jsx` — `Table` with columns (title, department, status `Badge`, openings, actions); search input debounced 300ms before dispatching `fetchJobs`; status filter via `Select`; empty state action: "Create your first job"
-- [ ] **3.4** `src/pages/Jobs/JobForm.jsx` — Zod schema in `job.schema.js` (title required, openings min 1, etc.); one component for both create and edit (a `mode` prop or presence of `defaultValues` decides which); submit button disabled while `isSubmitting`
-- [ ] **3.5** `src/pages/Jobs/JobDetail.jsx` — read-only field list + close/archive button behind a `Modal` confirmation
-- [ ] **3.6** Loading/error/empty states on `JobList` reuse Phase 2's `Skeleton`/`EmptyState`/`ErrorState` verbatim — no page-specific versions
+- [✅] **3.1** `src/features/jobs/jobsSlice.js` — state `{ items, status, error, filters: { search, status } }`; thunks `fetchJobs(filters)`, `createJob`, `updateJob`, `closeJob`; update `items` immutably via Redux Toolkit's built-in Immer, no manual deep spreading
+- [✅] **3.2** `src/api/jobs.api.js` — `getJobs(params)`, `getJob(id)`, `createJob(payload)`, `updateJob(id, payload)`, `closeJob(id)`; each unwraps `res.data.data` here once so components never touch the raw response envelope
+- [✅] **3.3** `src/pages/Jobs/JobList.jsx` — `Table` with columns (title, department, status `Badge`, openings, actions); search input debounced 300ms before dispatching `fetchJobs`; status filter via `Select`; empty state action: "Create your first job"
+- [✅] **3.4** `src/pages/Jobs/JobForm.jsx` — Zod schema in `job.schema.js` (title required, openings min 1, etc.); one component for both create and edit (a `mode` prop or presence of `defaultValues` decides which); submit button disabled while `isSubmitting`
+- [✅] **3.5** `src/pages/Jobs/JobDetail.jsx` — read-only field list + close/archive button behind a `Modal` confirmation
+- [✅] **3.6** Loading/error/empty states on `JobList` reuse Phase 2's `Skeleton`/`EmptyState`/`ErrorState` verbatim — no page-specific versions
 - [ ] **3.7** Lint + manual click-through (create → edit → close) before Phase 4
 
 ### Phase 4 — Candidate Management (Day 3–4)
@@ -246,45 +246,45 @@ After each task: run `npm run lint` and `npm run format` before starting the nex
 - [✅] **4.2** `src/services/application.service.js` — `createApplication(candidateId, jobId)` (catches the compound-unique-index violation and returns a clean 409-style message instead of a raw Mongo error), `addNote(applicationId, author, text)`
 - [✅] **4.3** `src/validators/candidate.validator.js` — `createCandidateSchema` (name, email valid, phone optional), `src/validators/application.validator.js` — `createApplicationSchema` (candidateId, jobId), `stageUpdateSchema` (stage must be one of the enum values), `addNoteSchema` (text required, non-empty)
 - [✅] **4.4** `src/routes/candidate.routes.js`, `src/routes/application.routes.js` — `GET /candidates`, `GET /candidates/:id`, `POST /candidates` (+ `validate(createCandidateSchema)`), `POST /applications` (+ `validate(createApplicationSchema)`), `POST /applications/:id/notes` (+ `validate(addNoteSchema)`)
-- [ ] **4.5** `src/api/candidates.api.js` — mirrors the exact pattern of `jobs.api.js` (same response-unwrap convention)
-- [ ] **4.6** `src/features/candidates/candidatesSlice.js` — same shape as `jobsSlice` (state/filters/thunks) — consistency here means less for a weaker model to improvise
-- [ ] **4.7** `CandidateList.jsx` — reuse `Table`, `EmptyState`, and the exact debounced-search pattern from `JobList` — copy the working pattern rather than redesigning it
-- [ ] **4.8** Candidate creation form — job-select dropdown that creates the `Candidate` AND the linking `Application` in one flow (two sequential calls, or one combined backend endpoint — pick one and stay consistent)
-- [ ] **4.9** Notes UI on candidate detail — textarea + submit, optimistically appends to the notes list, no rich text editor
+- [✅] **4.5** `src/api/candidates.api.js` — mirrors the exact pattern of `jobs.api.js` (same response-unwrap convention)
+- [✅] **4.6** `src/features/candidates/candidatesSlice.js` — same shape as `jobsSlice` (state/filters/thunks) — consistency here means less for a weaker model to improvise
+- [✅] **4.7** `CandidateList.jsx` — reuse `Table`, `EmptyState`, and the exact debounced-search pattern from `JobList` — copy the working pattern rather than redesigning it
+- [✅] **4.8** Candidate creation form — job-select dropdown that creates the `Candidate` AND the linking `Application` in one flow (two sequential calls, or one combined backend endpoint — pick one and stay consistent)
+- [✅] **4.9** Notes UI on candidate detail — textarea + submit, optimistically appends to the notes list, no rich text editor
 - [ ] **4.10** Lint + test before Phase 5
 
 ### Phase 5 — Hiring Pipeline (Day 4–5)
 
 - [✅] **5.1** `PATCH /applications/:id/stage` — body `{ stage }` behind `validate(stageUpdateSchema)`; service then checks the move against a fixed `STAGE_ORDER` array server-side (don't rely on the UI alone to prevent illegal jumps); pushes `{ stage, changedAt: Date.now(), changedBy: req.user.id }` to `stageHistory`
-- [ ] **5.2** `PipelineBoard.jsx` — ONE API call fetches all relevant applications, then groups them into columns client-side with a single `groupBy(applications, 'currentStage')` — never a separate fetch per column
-- [ ] **5.3** Stage-change action — a "Move to next stage" button is simpler and more reliable than drag-and-drop for a first pass; if you add drag-and-drop, the drop handler should call the exact same PATCH the button uses, not a duplicated code path
-- [ ] **5.4** Lint + test before Phase 6
+- [✅] **5.2** `PipelineBoard.jsx` — ONE API call fetches all relevant applications, then groups them into columns client-side with a single `groupBy(applications, 'currentStage')` — never a separate fetch per column
+- [✅] **5.3** Stage-change action — a "Move to next stage" button is simpler and more reliable than drag-and-drop for a first pass; if you add drag-and-drop, the drop handler should call the exact same PATCH the button uses, not a duplicated code path
+- [✅] **5.4** Lint + test before Phase 6
 
 ### Phase 6 — Dashboard (Day 5)
 
 - [✅] **6.1** `GET /dashboard/summary` — one combined response from a single request: `Job.countDocuments` (by status), `Application.aggregate` grouped by `currentStage`, and a `.sort({createdAt:-1}).limit(10)` recent-activity query — the frontend makes exactly one call for the whole dashboard
-- [ ] **6.2** `Dashboard.jsx` — stat cards + Recharts funnel/bar fed directly by `summary.pipelineCounts` + a recent-activity list; no client-side recomputation of numbers the backend already aggregated
-- [ ] **6.3** Lint + test before Phase 7
+- [✅] **6.2** `Dashboard.jsx` — stat cards + Recharts funnel/bar fed directly by `summary.pipelineCounts` + a recent-activity list; no client-side recomputation of numbers the backend already aggregated
+- [✅] **6.3** Lint + test before Phase 7
 
 ### Phase 7 — Candidate Profile (Day 5–6)
 
 - [✅] **7.1** `GET /candidates/:id` — backend joins `Candidate` + all its `Application`s (job title populated) + notes in one query via `.populate()`, so the frontend never makes a follow-up call per application
-- [ ] **7.2** `CandidateProfile.jsx` — reuses `PageHeader`, `Badge`, and a simple notes timeline (map + sort by `createdAt` descending) — no new list/card component invented here
-- [ ] **7.3** Lint + test before Phase 8
+- [✅] **7.2** `CandidateProfile.jsx` (implemented as `CandidateDetail.jsx`) — reuses header patterns, `Badge`, and a simple notes timeline (map + sort by `createdAt` descending) — no new list/card component invented here
+- [✅] **7.3** Lint + test before Phase 8
 
 ### Phase 8 — Polish Pass (Day 6)
 
-- [ ] **8.1** Resize every page at 375px / 768px / 1280px, smallest first — decide the mobile table→card behavior ONCE inside `Table.jsx` (e.g. a `hidden sm:table` / `sm:hidden` pair), not per page
-- [ ] **8.2** Every list page (`JobList`, `CandidateList`, `PipelineBoard`) has loading + empty + error states wired — audit against `JobList` as the reference implementation
-- [ ] **8.3** Every form shows field-level inline errors from its Zod schema, not just a generic toast — toast reports the overall submit result, inline errors say which field is wrong
-- [ ] **8.4** Tab order makes sense inside every `Modal`; all icon-only buttons have `aria-label`
-- [ ] **8.5** `npm run lint` + `npm run format` clean on both `client` and `server`, zero warnings, before deployment
+- [✅] **8.1** Resize every page at 375px / 768px / 1280px, smallest first — decide the mobile table→card behavior ONCE inside `Table.jsx` (e.g. a `hidden sm:table` / `sm:hidden` pair), not per page
+- [✅] **8.2** Every list page (`JobList`, `CandidateList`, `PipelineBoard`) has loading + empty + error states wired — audit against `JobList` as the reference implementation
+- [✅] **8.3** Every form shows field-level inline errors from its Zod schema, not just a generic toast — toast reports the overall submit result, inline errors say which field is wrong
+- [✅] **8.4** Tab order makes sense inside every `Modal`; all icon-only buttons have `aria-label`
+- [✅] **8.5** `npm run lint` + `npm run format` clean on both `client` and `server`, zero warnings, before deployment
 
 ### Phase 9 — Deployment + Docs (Day 7)
 
 - [ ] **9.1** Deploy `server` to Render/Railway, `client` to Vercel; env vars set on both platforms, never in the repo
-- [ ] **9.2** Final README: exact setup commands (`npm install`, `npm run dev`), the full list of required env vars with descriptions (no real values), a one-paragraph architecture overview plus the Section 3 folder structure, and known limitations stated honestly
-- [ ] **9.3** Confirm no secrets committed (scan `git log -p` for anything resembling a connection string or secret) and `.env.example` present in both `client` and `server`
+- [✅] **9.2** Final README: exact setup commands (`npm install`, `npm run dev`), the full list of required env vars with descriptions (no real values), a one-paragraph architecture overview plus the Section 3 folder structure, and known limitations stated honestly
+- [✅] **9.3** Confirm no secrets committed (scan `git log -p` for anything resembling a connection string or secret) and `.env.example` present in both `client` and `server`
 
 ---
 

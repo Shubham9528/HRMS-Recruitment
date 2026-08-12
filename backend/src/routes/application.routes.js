@@ -3,6 +3,7 @@ import {
   createApplication,
   addNote,
   updateStage,
+  getApplications,
 } from '../controllers/application.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
@@ -16,6 +17,7 @@ const router = express.Router();
 
 router.use(protect);
 
+router.get('/', getApplications);
 router.post('/', validate(createApplicationSchema), createApplication);
 router.post('/:id/notes', validate(addNoteSchema), addNote);
 router.patch('/:id/stage', validate(stageUpdateSchema), updateStage);

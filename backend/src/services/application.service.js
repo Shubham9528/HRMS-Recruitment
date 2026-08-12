@@ -2,6 +2,17 @@ import { Application } from '../models/Application.js';
 
 const STAGE_ORDER = ['applied', 'screening', 'interview', 'offer', 'hired'];
 
+export const getApplications = async (filters = {}) => {
+  const query = {};
+  if (filters.jobId) query.jobId = filters.jobId;
+  if (filters.candidateId) query.candidateId = filters.candidateId;
+
+  return await Application.find(query)
+    .populate('candidateId', 'name email phone')
+    .populate('jobId', 'title department')
+    .sort({ createdAt: -1 });
+};
+
 export const createApplication = async (candidateId, jobId) => {
   try {
     const application = await Application.create({
