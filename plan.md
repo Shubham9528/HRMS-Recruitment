@@ -123,7 +123,8 @@ server/
 │   ├── models/                # Job.js, Candidate.js, Application.js, User.js
 │   ├── controllers/           # job.controller.js, candidate.controller.js, application.controller.js, auth.controller.js
 │   ├── routes/                 # job.routes.js, candidate.routes.js, application.routes.js, auth.routes.js
-│   ├── middleware/             # auth.middleware.js, error.middleware.js, validate.middleware.js
+│   ├── middleware/             # auth.middleware.js, error.middleware.js, validate.middleware.js, rateLimiter.middleware.js
+│   ├── public/                 # static assets like index.html
 │   ├── validators/             # zod schemas per resource (auth, job, candidate, application)
 │   ├── services/               # business logic separated from controllers
 │   ├── utils/                  # apiResponse.js, asyncHandler.js
@@ -209,7 +210,7 @@ After each task: run `npm run lint` and `npm run format` before starting the nex
 - [✅] **1.16** `src/services/job.service.js` — `createJob`, `getJobs(filters)` (status filter, `limit`/`skip` pagination, `.select()` only the fields the list view needs), `getJobById`, `updateJob`, `closeJob` (sets `status: 'closed'`, `closedAt: Date.now()` — never deletes). `src/controllers/job.controller.js` stays thin — no query logic in the controller
 - [✅] **1.17** `src/validators/job.validator.js` — `createJobSchema` (title, department, location, employmentType, openings min 1 all required), `updateJobSchema` (same fields, all optional)
 - [✅] **1.18** `src/routes/job.routes.js` — `POST /jobs` (+ `validate(createJobSchema)`), `GET /jobs`, `GET /jobs/:id`, `PUT /jobs/:id` (+ `validate(updateJobSchema)`), `PATCH /jobs/:id/close` — all behind `auth.middleware`
-- [✅] **1.19** Wire `src/app.js`: `helmet()`, `cors({ origin: env.CLIENT_URL })`, `express.json({ limit: '10kb' })`, `express-rate-limit` (100 req/15min on `/api`), routes mounted under `/api`, error middleware registered LAST
+- [✅] **1.19** Wire `src/app.js`: `helmet()`, `cors({ origin: env.CLIENT_URL })`, `express.json({ limit: '10kb' })`, `express-rate-limit` (extracted to `src/middleware/rateLimiter.middleware.js`), routes mounted under `/api`, an HTML status page served on `GET /` from `src/public/index.html`, and error middleware registered LAST
 - [ ] **1.20** Lint clean + manually hit every route (Postman/Thunder Client) with valid AND invalid input before Phase 2
 
 ### Phase 2 — Frontend Foundation (Day 2)
