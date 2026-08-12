@@ -180,35 +180,36 @@ After each task: run `npm run lint` and `npm run format` before starting the nex
 
 ### Phase 0 — Setup & Guardrails (Day 1)
 
-- [ ] **0.1** Init `client` (Vite + React, JavaScript template) and `server` (`npm init`, Node + Express) as two separate npm projects with their own `package.json`
-- [ ] **0.2** `.eslintrc.cjs` (both) — base `eslint:recommended`; client adds `eslint-plugin-react` + `plugin:react-hooks/recommended` and forces `react/prop-types: error`. Force `error` on `no-unused-vars` and `no-console` (server: allow only inside `server.js`; client: disallow everywhere — use toast/UI feedback instead of logging)
-- [ ] **0.3** `.prettierrc` — `{ singleQuote: true, semi: true, trailingComma: "es5", tabWidth: 2, printWidth: 80 }` + `eslint-config-prettier` added to the ESLint `extends` array so lint and format rules never contradict each other
-- [ ] **0.4** `package.json` scripts (both): `"lint": "eslint src"`, `"lint:fix": "eslint src --fix"`, `"format": "prettier --write src"`
-- [ ] **0.5** MongoDB Atlas free-tier cluster; `server/.env` with `PORT`, `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`; `server/.env.example` with the same keys, empty values, committed to git
-- [ ] **0.6** `server/src/server.js` — imports `app.js`, calls `connectDB()`, then `app.listen(env.PORT)`; `app.js` exposes a single `GET /health` returning `{ status: 'ok' }`. Confirm `npm run dev` starts with zero lint errors
-- [ ] **0.7** `README.md` skeleton — headings only (Setup, Environment Variables, Running Locally, Tech Stack, Architecture Overview) — fill in content in Phase 9
+- [✅] **0.1** Init `client` (Vite + React, JavaScript template) and `server` (`npm init`, Node + Express) as two separate npm projects with their own `package.json`
+
+- [✅] **0.2** `.eslintrc.cjs` (both) — base `eslint:recommended`; client adds `eslint-plugin-react` + `plugin:react-hooks/recommended` and forces `react/prop-types: error`. Force `error` on `no-unused-vars` and `no-console` (server: allow only inside `server.js`; client: disallow everywhere — use toast/UI feedback instead of logging)
+- [✅] **0.3** `.prettierrc` — `{ singleQuote: true, semi: true, trailingComma: "es5", tabWidth: 2, printWidth: 80 }` + `eslint-config-prettier` added to the ESLint `extends` array so lint and format rules never contradict each other
+- [✅] **0.4** `package.json` scripts (both): `"lint": "eslint src"`, `"lint:fix": "eslint src --fix"`, `"format": "prettier --write src"`
+- [✅] **0.5** MongoDB Atlas free-tier cluster; `server/.env` with `PORT`, `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`; `server/.env.example` with the same keys, empty values, committed to git
+- [✅] **0.6** `server/src/server.js` — imports `app.js`, calls `connectDB()`, then `app.listen(env.PORT)`; `app.js` exposes a single `GET /health` returning `{ status: 'ok' }`. Confirm `npm run dev` starts with zero lint errors
+- [✅] **0.7** `README.md` skeleton — headings only (Setup, Environment Variables, Running Locally, Tech Stack, Architecture Overview) — fill in content in Phase 9
 
 ### Phase 1 — Backend Foundation (Day 1–2)
 
-- [ ] **1.1** `src/config/env.js` — export one frozen `env` object built from `process.env` (`PORT`, `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `NODE_ENV`). At import time, loop the required keys and `throw new Error('Missing env var: ' + key)` if any is undefined — fail at boot, not mid-request
-- [ ] **1.2** `src/config/db.js` — export async `connectDB()`: `mongoose.connect(env.MONGO_URI)`, log success, `process.exit(1)` on failure. Called exactly once, from `server.js`
-- [ ] **1.3** `src/models/User.js` — `name` (String, required), `email` (String, required, unique, lowercase, indexed), `passwordHash` (String, required, `select: false`), `role` (String, enum `['hr','admin']`, default `'hr'`), `timestamps: true`
-- [ ] **1.4** `src/models/Job.js` — `title`, `department`, `location`, `employmentType` (enum), `status` (enum `['open','closed','archived']`, default `'open'`, indexed — list/dashboard queries filter on this), `description`, `requirements` (`[String]`), `openings` (Number, min 1), `createdBy` (ObjectId ref `User`), `closedAt` (Date, default `null`), `timestamps: true`
-- [ ] **1.5** `src/models/Candidate.js` — `name`, `email` (indexed — search hits this), `phone`, `resumeUrl`, `source`, `timestamps: true`. No job-association array here — that relationship lives entirely in `Application`, avoiding duplicated state
-- [ ] **1.6** `src/models/Application.js` — `candidateId` (ObjectId ref `Candidate`, indexed), `jobId` (ObjectId ref `Job`, indexed), `currentStage` (enum `['applied','screening','interview','offer','hired','rejected']`, default `'applied'`, indexed), `stageHistory` (`[{ stage, changedAt, changedBy }]`), `notes` (`[{ author, text, createdAt }]`), `rating` (Number, optional), `timestamps: true`. Compound unique index on `{ candidateId, jobId }` to block duplicate applications
-- [ ] **1.7** `src/utils/asyncHandler.js` — one higher-order function: `(fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next)`. Every controller wraps in this — no try/catch blocks anywhere else
-- [ ] **1.8** `src/utils/apiResponse.js` — export `sendSuccess(res, data, message = '', status = 200)` returning `{ success: true, data, message }`. Errors do NOT go through this file — they go through the error middleware only
-- [ ] **1.9** `src/middleware/error.middleware.js` — one 4-arg Express handler, registered last in `app.js`. Reads `err.statusCode || 500`, responds `{ success: false, message: err.message }`; logs the full error server-side with a plain `console.error`, never leaks a stack trace to the client
-- [ ] **1.10** `src/services/auth.service.js` — pure functions only, no req/res: `hashPassword(plain)` (bcrypt, 10 rounds), `comparePassword(plain, hash)`, `signToken(userId)` (jwt.sign, expiry from `env.JWT_EXPIRES_IN`), `verifyToken(token)`
-- [ ] **1.11** `src/controllers/auth.controller.js` — `register`: validate → check email not taken → hash password → create `User` → sign token → `sendSuccess`. `login`: find user by email (`+passwordHash`) → compare → sign token → `sendSuccess`. Both wrapped in `asyncHandler`; both throw a `statusCode: 401` error on bad credentials without revealing which field was wrong
-- [ ] **1.12** `src/middleware/auth.middleware.js` — read `Authorization: Bearer <token>`, `verifyToken`, attach `req.user = { id, role }`, else `next(error 401)`. No token-parsing logic duplicated elsewhere
-- [ ] **1.13** `src/middleware/validate.middleware.js` — one generic `validate(schema) => (req, res, next)` factory: parses `req.body` against the given Zod schema, calls `next()` on success, or throws a `statusCode: 400` error with the first validation message on failure. Every route reuses this ONE factory — no per-route validation logic
-- [ ] **1.14** `src/validators/auth.validator.js` — `registerSchema` (name required, email valid, password min 8 chars), `loginSchema` (email, password) — plain Zod objects, no request/response code in this file
-- [ ] **1.15** `src/routes/auth.routes.js` — `POST /register`, `POST /login`, both behind `validate(registerSchema)` / `validate(loginSchema)`
-- [ ] **1.16** `src/services/job.service.js` — `createJob`, `getJobs(filters)` (status filter, `limit`/`skip` pagination, `.select()` only the fields the list view needs), `getJobById`, `updateJob`, `closeJob` (sets `status: 'closed'`, `closedAt: Date.now()` — never deletes). `src/controllers/job.controller.js` stays thin — no query logic in the controller
-- [ ] **1.17** `src/validators/job.validator.js` — `createJobSchema` (title, department, location, employmentType, openings min 1 all required), `updateJobSchema` (same fields, all optional)
-- [ ] **1.18** `src/routes/job.routes.js` — `POST /jobs` (+ `validate(createJobSchema)`), `GET /jobs`, `GET /jobs/:id`, `PUT /jobs/:id` (+ `validate(updateJobSchema)`), `PATCH /jobs/:id/close` — all behind `auth.middleware`
-- [ ] **1.19** Wire `src/app.js`: `helmet()`, `cors({ origin: env.CLIENT_URL })`, `express.json({ limit: '10kb' })`, `express-rate-limit` (100 req/15min on `/api`), routes mounted under `/api`, error middleware registered LAST
+- [✅] **1.1** `src/config/env.js` — export one frozen `env` object built from `process.env` (`PORT`, `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `NODE_ENV`). At import time, loop the required keys and `throw new Error('Missing env var: ' + key)` if any is undefined — fail at boot, not mid-request
+- [✅] **1.2** `src/config/db.js` — export async `connectDB()`: `mongoose.connect(env.MONGO_URI)`, log success, `process.exit(1)` on failure. Called exactly once, from `server.js`
+- [✅] **1.3** `src/models/User.js` — `name` (String, required), `email` (String, required, unique, lowercase, indexed), `passwordHash` (String, required, `select: false`), `role` (String, enum `['hr','admin']`, default `'hr'`), `timestamps: true`
+- [✅] **1.4** `src/models/Job.js` — `title`, `department`, `location`, `employmentType` (enum), `status` (enum `['open','closed','archived']`, default `'open'`, indexed — list/dashboard queries filter on this), `description`, `requirements` (`[String]`), `openings` (Number, min 1), `createdBy` (ObjectId ref `User`), `closedAt` (Date, default `null`), `timestamps: true`
+- [✅] **1.5** `src/models/Candidate.js` — `name`, `email` (indexed — search hits this), `phone`, `resumeUrl`, `source`, `timestamps: true`. No job-association array here — that relationship lives entirely in `Application`, avoiding duplicated state
+- [✅] **1.6** `src/models/Application.js` — `candidateId` (ObjectId ref `Candidate`, indexed), `jobId` (ObjectId ref `Job`, indexed), `currentStage` (enum `['applied','screening','interview','offer','hired','rejected']`, default `'applied'`, indexed), `stageHistory` (`[{ stage, changedAt, changedBy }]`), `notes` (`[{ author, text, createdAt }]`), `rating` (Number, optional), `timestamps: true`. Compound unique index on `{ candidateId, jobId }` to block duplicate applications
+- [✅] **1.7** `src/utils/asyncHandler.js` — one higher-order function: `(fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next)`. Every controller wraps in this — no try/catch blocks anywhere else
+- [✅] **1.8** `src/utils/apiResponse.js` — export `sendSuccess(res, data, message = '', status = 200)` returning `{ success: true, data, message }`. Errors do NOT go through this file — they go through the error middleware only
+- [✅] **1.9** `src/middleware/error.middleware.js` — one 4-arg Express handler, registered last in `app.js`. Reads `err.statusCode || 500`, responds `{ success: false, message: err.message }`; logs the full error server-side with a plain `console.error`, never leaks a stack trace to the client
+- [✅] **1.10** `src/services/auth.service.js` — pure functions only, no req/res: `hashPassword(plain)` (bcrypt, 10 rounds), `comparePassword(plain, hash)`, `signToken(userId)` (jwt.sign, expiry from `env.JWT_EXPIRES_IN`), `verifyToken(token)`
+- [✅] **1.11** `src/controllers/auth.controller.js` — `register`: validate → check email not taken → hash password → create `User` → sign token → `sendSuccess`. `login`: find user by email (`+passwordHash`) → compare → sign token → `sendSuccess`. Both wrapped in `asyncHandler`; both throw a `statusCode: 401` error on bad credentials without revealing which field was wrong
+- [✅] **1.12** `src/middleware/auth.middleware.js` — read `Authorization: Bearer <token>`, `verifyToken`, attach `req.user = { id, role }`, else `next(error 401)`. No token-parsing logic duplicated elsewhere
+- [✅] **1.13** `src/middleware/validate.middleware.js` — one generic `validate(schema) => (req, res, next)` factory: parses `req.body` against the given Zod schema, calls `next()` on success, or throws a `statusCode: 400` error with the first validation message on failure. Every route reuses this ONE factory — no per-route validation logic
+- [✅] **1.14** `src/validators/auth.validator.js` — `registerSchema` (name required, email valid, password min 8 chars), `loginSchema` (email, password) — plain Zod objects, no request/response code in this file
+- [✅] **1.15** `src/routes/auth.routes.js` — `POST /register`, `POST /login`, both behind `validate(registerSchema)` / `validate(loginSchema)`
+- [✅] **1.16** `src/services/job.service.js` — `createJob`, `getJobs(filters)` (status filter, `limit`/`skip` pagination, `.select()` only the fields the list view needs), `getJobById`, `updateJob`, `closeJob` (sets `status: 'closed'`, `closedAt: Date.now()` — never deletes). `src/controllers/job.controller.js` stays thin — no query logic in the controller
+- [✅] **1.17** `src/validators/job.validator.js` — `createJobSchema` (title, department, location, employmentType, openings min 1 all required), `updateJobSchema` (same fields, all optional)
+- [✅] **1.18** `src/routes/job.routes.js` — `POST /jobs` (+ `validate(createJobSchema)`), `GET /jobs`, `GET /jobs/:id`, `PUT /jobs/:id` (+ `validate(updateJobSchema)`), `PATCH /jobs/:id/close` — all behind `auth.middleware`
+- [✅] **1.19** Wire `src/app.js`: `helmet()`, `cors({ origin: env.CLIENT_URL })`, `express.json({ limit: '10kb' })`, `express-rate-limit` (100 req/15min on `/api`), routes mounted under `/api`, error middleware registered LAST
 - [ ] **1.20** Lint clean + manually hit every route (Postman/Thunder Client) with valid AND invalid input before Phase 2
 
 ### Phase 2 — Frontend Foundation (Day 2)
@@ -240,10 +241,10 @@ After each task: run `npm run lint` and `npm run format` before starting the nex
 
 ### Phase 4 — Candidate Management (Day 3–4)
 
-- [ ] **4.1** `src/services/candidate.service.js` — `createCandidate`, `getCandidates(filters)` (search on the indexed `name`/`email` fields; `jobId`/`stage` filters actually query the `Application` collection joined to `Candidate`, not a denormalized field on `Candidate`), `getCandidateById`. `src/controllers/candidate.controller.js` stays a thin wrapper
-- [ ] **4.2** `src/services/application.service.js` — `createApplication(candidateId, jobId)` (catches the compound-unique-index violation and returns a clean 409-style message instead of a raw Mongo error), `addNote(applicationId, author, text)`
-- [ ] **4.3** `src/validators/candidate.validator.js` — `createCandidateSchema` (name, email valid, phone optional), `src/validators/application.validator.js` — `createApplicationSchema` (candidateId, jobId), `stageUpdateSchema` (stage must be one of the enum values), `addNoteSchema` (text required, non-empty)
-- [ ] **4.4** `src/routes/candidate.routes.js`, `src/routes/application.routes.js` — `GET /candidates`, `GET /candidates/:id`, `POST /candidates` (+ `validate(createCandidateSchema)`), `POST /applications` (+ `validate(createApplicationSchema)`), `POST /applications/:id/notes` (+ `validate(addNoteSchema)`)
+- [✅] **4.1** `src/services/candidate.service.js` — `createCandidate`, `getCandidates(filters)` (search on the indexed `name`/`email` fields; `jobId`/`stage` filters actually query the `Application` collection joined to `Candidate`, not a denormalized field on `Candidate`), `getCandidateById`. `src/controllers/candidate.controller.js` stays a thin wrapper
+- [✅] **4.2** `src/services/application.service.js` — `createApplication(candidateId, jobId)` (catches the compound-unique-index violation and returns a clean 409-style message instead of a raw Mongo error), `addNote(applicationId, author, text)`
+- [✅] **4.3** `src/validators/candidate.validator.js` — `createCandidateSchema` (name, email valid, phone optional), `src/validators/application.validator.js` — `createApplicationSchema` (candidateId, jobId), `stageUpdateSchema` (stage must be one of the enum values), `addNoteSchema` (text required, non-empty)
+- [✅] **4.4** `src/routes/candidate.routes.js`, `src/routes/application.routes.js` — `GET /candidates`, `GET /candidates/:id`, `POST /candidates` (+ `validate(createCandidateSchema)`), `POST /applications` (+ `validate(createApplicationSchema)`), `POST /applications/:id/notes` (+ `validate(addNoteSchema)`)
 - [ ] **4.5** `src/api/candidates.api.js` — mirrors the exact pattern of `jobs.api.js` (same response-unwrap convention)
 - [ ] **4.6** `src/features/candidates/candidatesSlice.js` — same shape as `jobsSlice` (state/filters/thunks) — consistency here means less for a weaker model to improvise
 - [ ] **4.7** `CandidateList.jsx` — reuse `Table`, `EmptyState`, and the exact debounced-search pattern from `JobList` — copy the working pattern rather than redesigning it
@@ -253,20 +254,20 @@ After each task: run `npm run lint` and `npm run format` before starting the nex
 
 ### Phase 5 — Hiring Pipeline (Day 4–5)
 
-- [ ] **5.1** `PATCH /applications/:id/stage` — body `{ stage }` behind `validate(stageUpdateSchema)`; service then checks the move against a fixed `STAGE_ORDER` array server-side (don't rely on the UI alone to prevent illegal jumps); pushes `{ stage, changedAt: Date.now(), changedBy: req.user.id }` to `stageHistory`
+- [✅] **5.1** `PATCH /applications/:id/stage` — body `{ stage }` behind `validate(stageUpdateSchema)`; service then checks the move against a fixed `STAGE_ORDER` array server-side (don't rely on the UI alone to prevent illegal jumps); pushes `{ stage, changedAt: Date.now(), changedBy: req.user.id }` to `stageHistory`
 - [ ] **5.2** `PipelineBoard.jsx` — ONE API call fetches all relevant applications, then groups them into columns client-side with a single `groupBy(applications, 'currentStage')` — never a separate fetch per column
 - [ ] **5.3** Stage-change action — a "Move to next stage" button is simpler and more reliable than drag-and-drop for a first pass; if you add drag-and-drop, the drop handler should call the exact same PATCH the button uses, not a duplicated code path
 - [ ] **5.4** Lint + test before Phase 6
 
 ### Phase 6 — Dashboard (Day 5)
 
-- [ ] **6.1** `GET /dashboard/summary` — one combined response from a single request: `Job.countDocuments` (by status), `Application.aggregate` grouped by `currentStage`, and a `.sort({createdAt:-1}).limit(10)` recent-activity query — the frontend makes exactly one call for the whole dashboard
+- [✅] **6.1** `GET /dashboard/summary` — one combined response from a single request: `Job.countDocuments` (by status), `Application.aggregate` grouped by `currentStage`, and a `.sort({createdAt:-1}).limit(10)` recent-activity query — the frontend makes exactly one call for the whole dashboard
 - [ ] **6.2** `Dashboard.jsx` — stat cards + Recharts funnel/bar fed directly by `summary.pipelineCounts` + a recent-activity list; no client-side recomputation of numbers the backend already aggregated
 - [ ] **6.3** Lint + test before Phase 7
 
 ### Phase 7 — Candidate Profile (Day 5–6)
 
-- [ ] **7.1** `GET /candidates/:id` — backend joins `Candidate` + all its `Application`s (job title populated) + notes in one query via `.populate()`, so the frontend never makes a follow-up call per application
+- [✅] **7.1** `GET /candidates/:id` — backend joins `Candidate` + all its `Application`s (job title populated) + notes in one query via `.populate()`, so the frontend never makes a follow-up call per application
 - [ ] **7.2** `CandidateProfile.jsx` — reuses `PageHeader`, `Badge`, and a simple notes timeline (map + sort by `createdAt` descending) — no new list/card component invented here
 - [ ] **7.3** Lint + test before Phase 8
 

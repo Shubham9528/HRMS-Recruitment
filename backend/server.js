@@ -1,21 +1,17 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
+import app from "./src/app.js";
+import { connectDB } from "./src/config/db.js";
+import env from "./src/config/env.js";
 
-dotenv.config();
-const app = express();
-const PORT = process.env.PORT || 5000;
+const startServer = async () => {
+  // 1. Connect to database
+  await connectDB();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+  // 2. Start the Express server
+  app.listen(env.PORT, () => {
+    console.log(
+      `Server is running on http://localhost:${env.PORT} in ${env.NODE_ENV} mode`,
+    );
+  });
+};
 
-// Get Route
-app.get("/", (req, res) => {
-  res.send("Welcome to the backend API!");
-});
-
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+startServer();
