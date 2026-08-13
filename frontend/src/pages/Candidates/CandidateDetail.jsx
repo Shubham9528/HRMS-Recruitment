@@ -154,7 +154,7 @@ export default function CandidateDetail() {
                     Applied For
                   </h3>
                   <p className="mt-1 text-base text-text-primary">
-                    {primaryApp.job?.title || "Unknown Job"}
+                    {primaryApp.jobId?.title || "Unknown Job"}
                   </p>
                 </div>
                 <div>
@@ -192,7 +192,7 @@ export default function CandidateDetail() {
                   >
                     <div className="flex justify-between items-start mb-2">
                       <span className="font-medium text-sm text-text-primary">
-                        {note.author}
+                        {typeof note.author === 'object' ? note.author?.name : note.author}
                       </span>
                       <span className="text-xs text-text-secondary">
                         {new Date(note.createdAt).toLocaleString()}
